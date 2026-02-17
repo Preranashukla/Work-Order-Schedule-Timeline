@@ -1,0 +1,96 @@
+<div class="timeline-wrapper">
+  <!-- Top Bar -->
+  <div class="timeline-top-bar">
+    <div class="top-bar-left">
+      <h3 class="page-title">Work Orders</h3>
+    </div>
+    <div class="top-bar-right">
+      <div class="timescale-control">
+        <span class="timescale-label">Timescale:</span>
+        <ng-select
+          class="zoom-select"
+          [items]="zoomOptions"
+          bindLabel="label"
+          bindValue="value"
+          [(ngModel)]="selectedZoom"
+          (ngModelChange)="onZoomChange($event)"
+          [clearable]="false"
+          [searchable]="false"
+          appendTo="body"
+        >
+        </ng-select>
+      </div>
+      <button class="today-btn" (click)="scrollToToday()">
+        Today
+      </button>
+    </div>
+  </div>
+
+  <!-- Timeline Content -->
+  <div class="timeline-content">
+    <!-- Fixed Left Panel: Work Center Names -->
+    <div class="work-center-panel">
+      <div class="work-center-header">
+        <span>Work Center</span>
+      </div>
+      <div class="work-center-rows">
+        <app-work-center-list
+          [workCenters]="workCenterService.workCenters()"
+          [hoveredRowIndex]="hoveredRowIndex()"
+          (rowHover)="hoveredRowIndex.set($event)"
+          (rowLeave)="hoveredRowIndex.set(-1)"
+        />
+      </div>
+    </div>
+
+    <!-- Scrollable Right Panel: Timeline Grid -->
+    <div class="timeline-scroll-area">
+      <!-- Timeline Header (synced scroll) -->
+      <div class="timeline-header-scroll" #headerScrollContainer>
+        <app-timeline-header
+          [columns]="timelineService.columns()"
+          [columnWidth]="timelineService.columnWidth()"
+          [totalWidth]="timelineService.totalWidth()"
+          [todayPosition]="timelineService.getTodayPosition()"
+        />
+      </div>
+
+      <!-- Timeline Grid (main scrollable area) -->
+      <div 
+        class="timeline-grid-scroll" 
+        #timelineScrollContainer
+        (scroll)="onTimelineScroll($event)"
+      >
+        <app-timeline-grid
+          [workCenters]="workCenterService.workCenters()"
+          [workOrders]="workOrderService.workOrders()"
+          [columns]="timelineService.columns()"
+          [columnWidth]="timelineService.columnWidth()"
+          [totalWidth]="timelineService.totalWidth()"
+          [todayPosition]="timelineService.getTodayPosition()"
+          [hoveredRowIndex]="hoveredRowIndex()"
+          [timelineService]="timelineService"
+          (rowHover)="hoveredRowIndex.set($event)"
+          (rowLeave)="hoveredRowIndex.set(-1)"
+          (timelineClick)="onTimelineClick($event)"
+          (editWorkOrder)="onEditWorkOrder($event)"
+          (deleteWorkOrder)="onDeleteWorkOrder($event)"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide-out Panel (Create/Edit) -->
+  @if (panelState().isOpen) {
+    <div class="overlay-backdrop visible" (click)="onPanelClose()"></div>
+    <app-work-order-panel
+      [mode]="panelState().mode"
+      [workCenterId]="panelState().workCenterId"
+      [workOrderId]="panelState().workOrderId"
+      [prefilledStartDate]="panelState().prefilledStartDate"
+      [workCenters]="workCenterService.workCenters()"
+      (save)="onPanelSave()"
+      (cancel)="onPanelClose()"
+    />
+  }
+</div>

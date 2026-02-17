@@ -1,0 +1,105 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
+
+# Node
+/node_modules
+npm-debug.log
+yarn-error.log
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# Miscellaneous
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Test coverage
+/coverage
+/.nyc_output
+
+# TypeScript
+*.tsbuildinfo
+
+# Build files
+*.js.map
+*.d.ts.map
+
+# Large media files (videos, etc.)
+*.mp4
+*.mov
+*.avi
+*.wmv
+*.flv
+*.webm
+
+# Token and credential files
+*.tokens.json
+*.key
+*.pem
+*.cert
+
+# Project-specific files to ignore
+FE Kickoff and Handover.mp4
+fe-take-home-challenge.tokens.json
+
+# OS specific
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+ehthumbs.db
+ehthumbs_vista.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~.nib
+
+# Package manager lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
