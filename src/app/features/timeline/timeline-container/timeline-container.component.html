@@ -1,28 +1,31 @@
 <div class="timeline-wrapper">
+  <!-- App Title with Logo -->
+  <div class="app-title">
+    <img src="assets/Group 3.png" alt="Naologic Logo" />
+  </div>
   <!-- Top Bar -->
   <div class="timeline-top-bar">
-    <div class="top-bar-left">
-      <h3 class="page-title">Work Orders</h3>
-    </div>
-    <div class="top-bar-right">
-      <div class="timescale-control">
-        <span class="timescale-label">Timescale:</span>
-        <ng-select
-          class="zoom-select"
-          [items]="zoomOptions"
-          bindLabel="label"
-          bindValue="value"
-          [(ngModel)]="selectedZoom"
-          (ngModelChange)="onZoomChange($event)"
-          [clearable]="false"
-          [searchable]="false"
-          appendTo="body"
-        >
-        </ng-select>
+    <div class="top-bar-content">
+      <div class="top-bar-left">
+        <h3 class="page-title">Work Orders</h3>
+        <div class="timescale-control">
+          <span class="timescale-label">Timescale</span>
+          <ng-select
+            class="zoom-select"
+            [items]="zoomOptions"
+            bindLabel="label"
+            bindValue="value"
+            [(ngModel)]="selectedZoom"
+            (ngModelChange)="onZoomChange($event)"
+            [clearable]="false"
+            [searchable]="false"
+            appendTo="body"
+            dropdownPosition="auto"
+            dropdownPanelClass="timescale-dropdown"
+          >
+          </ng-select>
+        </div>
       </div>
-      <button class="today-btn" (click)="scrollToToday()">
-        Today
-      </button>
     </div>
   </div>
 

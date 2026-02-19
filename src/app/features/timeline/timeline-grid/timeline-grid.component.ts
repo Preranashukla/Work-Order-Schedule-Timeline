@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WorkCenterDocument } from '../../../core/models/work-center.model';
 import { WorkOrderDocument } from '../../../core/models/work-order.model';
@@ -17,6 +17,13 @@ import { WorkOrderBarComponent } from '../work-order-bar/work-order-bar.componen
   imports: [CommonModule, WorkOrderBarComponent],
   template: `
     <div class="timeline-grid" [style.width.px]="totalWidth">
+      <!-- Current month indicator -->
+      @if (getCurrentMonthColumn() !== -1) {
+        <div class="current-month-label" [style.left.px]="getCurrentMonthPosition()">
+          Current month
+        </div>
+      }
+
       <!-- Grid rows for each work center -->
       <div 
         class="grid-row"
@@ -51,6 +58,18 @@ import { WorkOrderBarComponent } from '../work-order-bar/work-order-bar.componen
         class="today-indicator"
         [style.left.px]="todayPosition"
       ></div>
+
+      <!-- Hover Tooltip -->
+      @if (tooltipVisible()) {
+        <div 
+          class="timeline-tooltip"
+          [style.left.px]="tooltipX()"
+          [style.top.px]="tooltipY()"
+        >
+          <span class="tooltip-icon">📌</span>
+          <span class="tooltip-text">Click to add dates</span>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -68,7 +87,6 @@ import { WorkOrderBarComponent } from '../work-order-bar/work-order-bar.componen
       position: relative;
       height: var(--row-height, 64px);
       min-height: var(--row-height, 64px);
-      border-bottom: 1px solid var(--border-light, #F0F1F5);
       cursor: pointer;
       transition: background-color 0.12s ease;
 
@@ -79,8 +97,8 @@ import { WorkOrderBarComponent } from '../work-order-bar/work-order-bar.componen
 
     .grid-cell {
       height: 100%;
-      border-right: 1px solid var(--border-light, #F0F1F5);
       flex-shrink: 0;
+      border-right: 1px solid var(--border-light, #F0F1F5);
 
       &.is-weekend {
         background-color: rgba(248, 249, 252, 0.4);
@@ -100,6 +118,62 @@ import { WorkOrderBarComponent } from '../work-order-bar/work-order-bar.componen
       z-index: 2;
       pointer-events: none;
     }
+
+    .timeline-tooltip {
+      position: fixed;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 14px;
+      background-color: #5A5C6B;
+      color: #FFFFFF;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 1000;
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .tooltip-icon {
+      font-size: 15px;
+      line-height: 1;
+      filter: grayscale(100%) brightness(2);
+    }
+
+    .tooltip-text {
+      line-height: 1;
+      letter-spacing: 0.2px;
+    }
+
+    .current-month-label {
+      position: absolute;
+      top: 0px;
+      transform: translateX(-50%);
+      font-size: 10px;
+      font-weight: 600;
+      color: #5659FF;
+      background-color: rgba(86, 89, 255, 0.12);
+      padding: 3px 10px;
+      border-radius: 4px;
+      white-space: nowrap;
+      z-index: 100;
+      letter-spacing: 0.3px;
+      pointer-events: none;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   `]
 })
 export class TimelineGridComponent {
@@ -117,6 +191,11 @@ export class TimelineGridComponent {
   @Output() timelineClick = new EventEmitter<{ workCenterId: string; date: Date }>();
   @Output() editWorkOrder = new EventEmitter<string>();
   @Output() deleteWorkOrder = new EventEmitter<string>();
+
+  /** Tooltip state */
+  tooltipVisible = signal<boolean>(false);
+  tooltipX = signal<number>(0);
+  tooltipY = signal<number>(0);
 
   /**
    * Get work orders for a specific work center
@@ -137,6 +216,37 @@ export class TimelineGridComponent {
    */
   getBarWidth(wo: WorkOrderDocument): number {
     return this.timelineService.calculateBarWidth(wo.data.startDate, wo.data.endDate);
+  }
+
+  /**
+   * Handle mouse move to show/hide tooltip
+   */
+  @HostListener('mousemove', ['$event'])
+  onMouseMove(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    
+    // Hide tooltip if hovering over a work order bar
+    if (target.closest('app-work-order-bar')) {
+      this.tooltipVisible.set(false);
+      return;
+    }
+
+    // Show tooltip if hovering over grid cells
+    if (target.classList.contains('grid-cell') || target.classList.contains('grid-row')) {
+      this.tooltipVisible.set(true);
+      this.tooltipX.set(event.clientX + 10);
+      this.tooltipY.set(event.clientY + 10);
+    } else {
+      this.tooltipVisible.set(false);
+    }
+  }
+
+  /**
+   * Handle mouse leave to hide tooltip
+   */
+  @HostListener('mouseleave')
+  onMouseLeave(): void {
+    this.tooltipVisible.set(false);
   }
 
   /**
@@ -181,5 +291,42 @@ export class TimelineGridComponent {
 
   trackByWo(index: number, wo: WorkOrderDocument): string {
     return wo.docId;
+  }
+
+  /**
+   * Check if the given date is in the current month
+   */
+  isCurrentMonth(date: Date): boolean {
+    const today = new Date();
+    return date.getMonth() === today.getMonth() && 
+           date.getFullYear() === today.getFullYear();
+  }
+
+  /**
+   * Check if this is the first column of the month
+   */
+  isFirstColumnOfMonth(index: number): boolean {
+    if (index === 0) return true;
+    const currentCol = this.columns[index];
+    const prevCol = this.columns[index - 1];
+    return currentCol.date.getMonth() !== prevCol.date.getMonth();
+  }
+
+  /**
+   * Get the index of the first column of the current month
+   */
+  getCurrentMonthColumn(): number {
+    return this.columns.findIndex((col, i) => 
+      this.isCurrentMonth(col.date) && this.isFirstColumnOfMonth(i)
+    );
+  }
+
+  /**
+   * Get the left position for the current month label
+   */
+  getCurrentMonthPosition(): number {
+    const index = this.getCurrentMonthColumn();
+    if (index === -1) return 0;
+    return index * this.columnWidth + (this.columnWidth / 2);
   }
 }

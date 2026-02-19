@@ -35,13 +35,14 @@ export class TimelineContainerComponent implements OnInit, AfterViewInit {
 
   /** Zoom level options for the dropdown */
   zoomOptions = [
+    { label: 'Hour', value: 'hour' as ZoomLevel },
     { label: 'Day', value: 'day' as ZoomLevel },
     { label: 'Week', value: 'week' as ZoomLevel },
     { label: 'Month', value: 'month' as ZoomLevel }
   ];
 
   /** Current selected zoom level */
-  selectedZoom: ZoomLevel = 'day';
+  selectedZoom: ZoomLevel = 'month';
 
   /** Panel state */
   panelState = signal<PanelState>({

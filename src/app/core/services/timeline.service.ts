@@ -16,10 +16,10 @@ import {
 })
 export class TimelineService {
   /** Current zoom level */
-  private readonly _zoomLevel = signal<ZoomLevel>('day');
+  private readonly _zoomLevel = signal<ZoomLevel>('month');
   
   /** Current visible date range */
-  private readonly _dateRange = signal<DateRange>(this.calculateInitialRange('day'));
+  private readonly _dateRange = signal<DateRange>(this.calculateInitialRange('month'));
 
   /** Public readonly signals */
   readonly zoomLevel = computed(() => this._zoomLevel());
@@ -99,6 +99,11 @@ export class TimelineService {
    */
   private getColumnLabel(date: Date, zoom: ZoomLevel): string {
     switch (zoom) {
+      case 'hour':
+        const hour = date.getHours();
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour % 12 || 12;
+        return `${displayHour} ${ampm}`;
       case 'day':
         return date.getDate().toString();
       case 'week':
@@ -113,6 +118,8 @@ export class TimelineService {
    */
   private getColumnSubLabel(date: Date, zoom: ZoomLevel): string | undefined {
     switch (zoom) {
+      case 'hour':
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       case 'day':
         return date.toLocaleDateString('en-US', { weekday: 'short' });
       case 'week':
@@ -127,6 +134,9 @@ export class TimelineService {
    */
   private incrementDate(date: Date, zoom: ZoomLevel): void {
     switch (zoom) {
+      case 'hour':
+        date.setHours(date.getHours() + 1);
+        break;
       case 'day':
         date.setDate(date.getDate() + 1);
         break;
@@ -163,11 +173,15 @@ export class TimelineService {
     const startTime = range.start.getTime();
     const targetTime = targetDate.getTime();
     
-    // Calculate days from start
-    const daysDiff = (targetTime - startTime) / (1000 * 60 * 60 * 24);
+    // Calculate time difference
+    const timeDiff = targetTime - startTime;
+    const hoursDiff = timeDiff / (1000 * 60 * 60);
+    const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
     
     // Convert to pixels based on zoom level
     switch (zoom) {
+      case 'hour':
+        return hoursDiff * COLUMN_WIDTHS.hour;
       case 'day':
         return daysDiff * COLUMN_WIDTHS.day;
       case 'week':
@@ -186,23 +200,27 @@ export class TimelineService {
   positionToDate(position: number): Date {
     const range = this._dateRange();
     const zoom = this._zoomLevel();
-    
-    let daysDiff: number;
+    const result = new Date(range.start);
     
     switch (zoom) {
+      case 'hour':
+        const hoursDiff = position / COLUMN_WIDTHS.hour;
+        result.setHours(result.getHours() + Math.floor(hoursDiff));
+        break;
       case 'day':
-        daysDiff = position / COLUMN_WIDTHS.day;
+        const daysDiffDay = position / COLUMN_WIDTHS.day;
+        result.setDate(result.getDate() + Math.floor(daysDiffDay));
         break;
       case 'week':
-        daysDiff = (position / COLUMN_WIDTHS.week) * 7;
+        const daysDiffWeek = (position / COLUMN_WIDTHS.week) * 7;
+        result.setDate(result.getDate() + Math.floor(daysDiffWeek));
         break;
       case 'month':
-        daysDiff = (position / COLUMN_WIDTHS.month) * 30.44;
+        const daysDiffMonth = (position / COLUMN_WIDTHS.month) * 30.44;
+        result.setDate(result.getDate() + Math.floor(daysDiffMonth));
         break;
     }
     
-    const result = new Date(range.start);
-    result.setDate(result.getDate() + Math.floor(daysDiff));
     return result;
   }
 
@@ -216,17 +234,23 @@ export class TimelineService {
     const start = new Date(startDate);
     const end = new Date(endDate);
     
-    // Add 1 day to include the end date
-    const daysDiff = ((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const timeDiff = end.getTime() - start.getTime();
+    const hoursDiff = timeDiff / (1000 * 60 * 60);
+    const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+    
     const zoom = this._zoomLevel();
     
     switch (zoom) {
+      case 'hour':
+        // Add 1 hour to include the end hour
+        return (hoursDiff + 1) * COLUMN_WIDTHS.hour;
       case 'day':
-        return daysDiff * COLUMN_WIDTHS.day;
+        // Add 1 day to include the end date
+        return (daysDiff + 1) * COLUMN_WIDTHS.day;
       case 'week':
-        return (daysDiff / 7) * COLUMN_WIDTHS.week;
+        return ((daysDiff + 1) / 7) * COLUMN_WIDTHS.week;
       case 'month':
-        return (daysDiff / 30.44) * COLUMN_WIDTHS.month;
+        return ((daysDiff + 1) / 30.44) * COLUMN_WIDTHS.month;
     }
   }
 

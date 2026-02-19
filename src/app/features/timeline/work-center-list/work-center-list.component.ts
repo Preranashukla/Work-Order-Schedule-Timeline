@@ -37,25 +37,27 @@ import { WorkCenterDocument } from '../../../core/models/work-center.model';
     .work-center-row {
       display: flex;
       align-items: center;
-      height: var(--row-height, 64px);
-      min-height: var(--row-height, 64px);
-      padding: 0 16px;
-      border-bottom: 1px solid var(--border-light, #F0F1F5);
+      height: 64px;
+      min-height: 64px;
+      padding: 0 20px;
+      border-bottom: 1px solid #F0F1F5;
       cursor: default;
-      transition: background-color 0.12s ease;
+      transition: background-color 0.15s ease;
+      background-color: #FFFFFF;
 
       &.hovered {
-        background-color: var(--bg-hover, #F4F5F9);
+        background-color: #F8F9FC;
       }
     }
 
     .wc-name {
       font-size: 14px;
       font-weight: 500;
-      color: var(--text-primary, #030929);
+      color: #030929;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      letter-spacing: -0.1px;
     }
   `]
 })

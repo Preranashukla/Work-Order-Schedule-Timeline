@@ -1,12 +1,31 @@
 <div class="panel-container" (click)="$event.stopPropagation()">
   <!-- Panel Header -->
   <div class="panel-header">
-    <h3 class="panel-title">{{ panelTitle }}</h3>
-    <button class="close-btn" (click)="onCancel()" type="button" aria-label="Close panel">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M15 5L5 15M5 5L15 15" stroke="#687196" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
+    <div class="header-content">
+      <h3 class="panel-title">Work Order Details</h3>
+      <p class="panel-subtitle">Specify the dates, name and status for this order</p>
+    </div>
+    <div class="header-actions">
+      <button 
+        type="button" 
+        class="btn btn-secondary" 
+        (click)="onCancel()"
+        [disabled]="isSubmitting()"
+      >
+        Cancel
+      </button>
+      <button 
+        type="submit" 
+        class="btn btn-primary" 
+        (click)="onSubmit()"
+        [disabled]="isSubmitting()"
+      >
+        @if (isSubmitting()) {
+          <span class="spinner"></span>
+        }
+        {{ submitButtonText }}
+      </button>
+    </div>
   </div>
 
   <!-- Panel Body -->
@@ -14,7 +33,7 @@
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <!-- Work Order Name -->
       <div class="form-group">
-        <label class="form-label" for="name">Work Order Name <span class="required">*</span></label>
+        <label class="form-label" for="name">Work Order Name</label>
         <input
           type="text"
           id="name"
@@ -28,112 +47,89 @@
         }
       </div>
 
-      <!-- Work Center -->
-      <div class="form-group">
-        <label class="form-label" for="workCenter">Work Center <span class="required">*</span></label>
-        <ng-select
-          id="workCenter"
-          formControlName="workCenterId"
-          [items]="workCenters"
-          bindLabel="data.name"
-          bindValue="docId"
-          placeholder="Select work center"
-          [clearable]="false"
-          [searchable]="true"
-          appendTo="body"
-          [class.error]="hasError('workCenterId')"
-        >
-        </ng-select>
-        @if (hasError('workCenterId')) {
-          <span class="error-message">Work center is required</span>
-        }
-      </div>
-
       <!-- Status -->
       <div class="form-group">
-        <label class="form-label" for="status">Status <span class="required">*</span></label>
+        <label class="form-label" for="status">Status</label>
         <ng-select
           id="status"
+          class="status-select"
           formControlName="status"
           [items]="statusOptions"
           bindLabel="label"
           bindValue="value"
-          placeholder="Select status"
           [clearable]="false"
           [searchable]="false"
           appendTo="body"
         >
           <ng-template ng-label-tmp let-item="item">
-            <span class="status-option">
-              <span class="status-dot" [style.backgroundColor]="item.color"></span>
+            <span class="status-option" [ngClass]="'status-' + item.value.toLowerCase().replace(' ', '-')">
               {{ item.label }}
             </span>
           </ng-template>
           <ng-template ng-option-tmp let-item="item">
-            <span class="status-option">
-              <span class="status-dot" [style.backgroundColor]="item.color"></span>
+            <span class="status-option" [ngClass]="'status-' + item.value.toLowerCase().replace(' ', '-')">
               {{ item.label }}
             </span>
           </ng-template>
         </ng-select>
       </div>
 
-      <!-- Date Range -->
-      <div class="form-row">
-        <!-- Start Date -->
-        <div class="form-group half">
-          <label class="form-label" for="startDate">Start Date <span class="required">*</span></label>
-          <div class="date-input-wrapper">
-            <input
-              type="text"
-              id="startDate"
-              class="form-input date-input"
-              placeholder="YYYY-MM-DD"
-              ngbDatepicker
-              #startPicker="ngbDatepicker"
-              formControlName="startDate"
-              (click)="startPicker.toggle()"
-              readonly
-              [class.error]="hasError('startDate')"
-            />
-            <button type="button" class="date-btn" (click)="startPicker.toggle()">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M12.667 2.667H3.333C2.597 2.667 2 3.264 2 4v9.333c0 .737.597 1.334 1.333 1.334h9.334c.736 0 1.333-.597 1.333-1.334V4c0-.736-.597-1.333-1.333-1.333zM10.667 1.333v2.667M5.333 1.333v2.667M2 6.667h12" stroke="#687196" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-          </div>
-          @if (hasError('startDate')) {
-            <span class="error-message">Start date is required</span>
-          }
+      <!-- End Date -->
+      <div class="form-group">
+        <label class="form-label" for="endDate">End date</label>
+        <div class="date-input-wrapper">
+          <input
+            type="text"
+            id="endDate"
+            class="form-input date-input"
+            placeholder="MM.DD.YYYY"
+            ngbDatepicker
+            #endPicker="ngbDatepicker"
+            formControlName="endDate"
+            (click)="endPicker.toggle()"
+            readonly
+            [class.error]="hasError('endDate')"
+          />
+          <button type="button" class="date-btn" (click)="endPicker.toggle()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M12.667 2.667H3.333C2.597 2.667 2 3.264 2 4v9.333c0 .737.597 1.334 1.333 1.334h9.334c.736 0 1.333-.597 1.333-1.334V4c0-.736-.597-1.333-1.333-1.333zM10.667 1.333v2.667M5.333 1.333v2.667M2 6.667h12" stroke="#687196" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
         </div>
-
-        <!-- End Date -->
-        <div class="form-group half">
-          <label class="form-label" for="endDate">End Date <span class="required">*</span></label>
-          <div class="date-input-wrapper">
-            <input
-              type="text"
-              id="endDate"
-              class="form-input date-input"
-              placeholder="YYYY-MM-DD"
-              ngbDatepicker
-              #endPicker="ngbDatepicker"
-              formControlName="endDate"
-              (click)="endPicker.toggle()"
-              readonly
-              [class.error]="hasError('endDate')"
-            />
-            <button type="button" class="date-btn" (click)="endPicker.toggle()">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M12.667 2.667H3.333C2.597 2.667 2 3.264 2 4v9.333c0 .737.597 1.334 1.333 1.334h9.334c.736 0 1.333-.597 1.333-1.334V4c0-.736-.597-1.333-1.333-1.333zM10.667 1.333v2.667M5.333 1.333v2.667M2 6.667h12" stroke="#687196" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-          </div>
-          @if (hasError('endDate')) {
-            <span class="error-message">End date is required</span>
-          }
-        </div>
+        @if (hasError('endDate')) {
+          <span class="error-message">End date is required</span>
+        }
       </div>
+
+      <!-- Start Date -->
+      <div class="form-group">
+        <label class="form-label" for="startDate">Start date</label>
+        <div class="date-input-wrapper">
+          <input
+            type="text"
+            id="startDate"
+            class="form-input date-input"
+            placeholder="MM.DD.YYYY"
+            ngbDatepicker
+            #startPicker="ngbDatepicker"
+            formControlName="startDate"
+            (click)="startPicker.toggle()"
+            readonly
+            [class.error]="hasError('startDate')"
+          />
+          <button type="button" class="date-btn" (click)="startPicker.toggle()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M12.667 2.667H3.333C2.597 2.667 2 3.264 2 4v9.333c0 .737.597 1.334 1.333 1.334h9.334c.736 0 1.333-.597 1.333-1.334V4c0-.736-.597-1.333-1.333-1.333zM10.667 1.333v2.667M5.333 1.333v2.667M2 6.667h12" stroke="#687196" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        @if (hasError('startDate')) {
+          <span class="error-message">Start date is required</span>
+        }
+      </div>
+
+      <!-- Work Center (Hidden in design but keeping for functionality) -->
+      <input type="hidden" formControlName="workCenterId" />
 
       <!-- Overlap Error -->
       @if (overlapError()) {
@@ -145,28 +141,5 @@
         </div>
       }
     </form>
-  </div>
-
-  <!-- Panel Footer -->
-  <div class="panel-footer">
-    <button 
-      type="button" 
-      class="btn btn-secondary" 
-      (click)="onCancel()"
-      [disabled]="isSubmitting()"
-    >
-      Cancel
-    </button>
-    <button 
-      type="submit" 
-      class="btn btn-primary" 
-      (click)="onSubmit()"
-      [disabled]="isSubmitting()"
-    >
-      @if (isSubmitting()) {
-        <span class="spinner"></span>
-      }
-      {{ submitButtonText }}
-    </button>
   </div>
 </div>

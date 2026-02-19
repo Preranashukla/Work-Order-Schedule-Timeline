@@ -130,26 +130,75 @@ h3 {
       box-shadow: 0 0 0 3px rgba(86, 89, 255, 0.12);
     }
   }
+}
 
-  .ng-dropdown-panel {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    margin-top: 4px;
+.ng-dropdown-panel {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+  margin-top: 4px !important;
+  background-color: #FFFFFF !important;
 
-    .ng-dropdown-panel-items {
-      .ng-option {
-        padding: 8px 12px;
-        font-size: 14px;
+  .ng-dropdown-panel-items {
+    background-color: #FFFFFF !important;
 
-        &.ng-option-marked {
-          background-color: var(--bg-hover);
-        }
+    .ng-option {
+      padding: 8px 12px !important;
+      font-size: 14px !important;
+      background-color: #FFFFFF !important;
 
-        &.ng-option-selected {
-          background-color: var(--status-open-bg);
-          color: var(--element-primary-3);
-        }
+      &.ng-option-marked {
+        background-color: var(--bg-hover) !important;
+      }
+
+      &.ng-option-selected {
+        background-color: var(--status-open-bg) !important;
+        color: var(--element-primary-3) !important;
+      }
+    }
+  }
+}
+
+/* Status dropdown specific styling */
+.ng-dropdown-panel.status-dropdown {
+  .ng-option {
+    background-color: #FFFFFF !important;
+
+    &.ng-option-selected {
+      background-color: #F8F9FC !important;
+    }
+  }
+}
+
+/* Timescale dropdown specific styling and positioning */
+.ng-dropdown-panel.zoom-select {
+  left: 111.35px !important;
+  width: 200px !important;
+  min-width: 200px !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+  margin-top: 4px !important;
+  background-color: #FFFFFF !important;
+  padding: 4px 0 !important;
+
+  .ng-dropdown-panel-items {
+    background-color: #FFFFFF !important;
+    
+    .ng-option {
+      padding: 10px 16px !important;
+      font-size: 14px !important;
+      color: #030929 !important;
+      background-color: #FFFFFF !important;
+      
+      &:hover {
+        background-color: #F4F5F9 !important;
+      }
+
+      &.ng-option-selected {
+        background-color: transparent !important;
+        color: #5659FF !important;
+        font-weight: 500 !important;
       }
     }
   }

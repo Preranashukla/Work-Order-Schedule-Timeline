@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, HostListener, ElementRef, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, HostBinding, ElementRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WorkOrderDocument, STATUS_CONFIG } from '../../../core/models/work-order.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
@@ -16,7 +16,6 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
     <div 
       class="work-order-bar"
       [style.left.px]="leftPosition"
-      [style.width.px]="barWidth"
       [style.backgroundColor]="statusConfig.bgColor"
       [style.borderColor]="statusConfig.color"
       [class.hovered]="isHovered"
@@ -77,11 +76,16 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
       top: 50%;
       transform: translateY(-50%);
       z-index: 3;
+
+      &.menu-open {
+        z-index: 100;
+      }
     }
 
     .work-order-bar {
       position: absolute;
-      height: 40px;
+      width: 381px;
+      height: 38px;
       border-radius: 6px;
       border-left: 3px solid;
       display: flex;
@@ -90,11 +94,10 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
       padding: 0 8px 0 10px;
       cursor: pointer;
       transition: box-shadow 0.15s ease, transform 0.1s ease;
-      overflow: hidden;
+      overflow: visible;
 
       &.hovered {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-        z-index: 5;
       }
     }
 
@@ -126,16 +129,16 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
       background: transparent;
       border-radius: 4px;
       cursor: pointer;
-      opacity: 0;
+      opacity: 1;
       transition: opacity 0.15s ease, background-color 0.12s ease;
       flex-shrink: 0;
 
-      &.visible {
-        opacity: 1;
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.08);
       }
 
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.06);
+      &:active {
+        background-color: rgba(0, 0, 0, 0.12);
       }
     }
 
@@ -144,11 +147,11 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
       top: 100%;
       right: 4px;
       margin-top: 4px;
-      background: var(--bg-white, #FFFFFF);
-      border: 1px solid var(--border-color, #E8EAF0);
+      background: #FFFFFF;
+      border: 1px solid #E8EAF0;
       border-radius: 8px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      z-index: 100;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
       min-width: 120px;
       overflow: hidden;
     }
@@ -229,6 +232,11 @@ export class WorkOrderBarComponent {
 
   isHovered = false;
   menuOpen = signal(false);
+
+  @HostBinding('class.menu-open')
+  get isMenuOpen() {
+    return this.menuOpen();
+  }
 
   get statusConfig() {
     return STATUS_CONFIG[this.workOrder.data.status];

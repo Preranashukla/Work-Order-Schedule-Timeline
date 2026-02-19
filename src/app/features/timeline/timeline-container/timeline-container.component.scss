@@ -4,105 +4,135 @@
   height: 100%;
 }
 
+.app-title {
+  padding: 16px 0px;
+  display: flex;
+  align-items: center;
+  z-index: 1000;
+  
+  img {
+    height: 10px;
+    width: auto;
+  }
+}
+
 .timeline-wrapper {
   display: flex;
   flex-direction: column;
   height: 100vh;
   background-color: var(--bg-white);
   overflow: hidden;
+  margin-left: 110px;
+  margin-right: 45px;
 }
 
 /* ===== Top Bar ===== */
 .timeline-top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--bg-white);
+  padding: 28px 0px 24px;
+  border-bottom: 1px solid #E8EAF0;
+  background-color: #FFFFFF;
   flex-shrink: 0;
   z-index: 10;
 }
 
-.top-bar-left {
-  .page-title {
-    font-size: 24px;
-    font-weight: 500;
-    color: var(--text-primary);
-    margin: 0;
-    font-family: "Circular Std", "CircularStd", sans-serif;
-  }
+.top-bar-content {
+  display: flex;
+  align-items: flex-start;
 }
 
-.top-bar-right {
+.top-bar-left {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 26px;
+
+  .page-title {
+    font-size: 32px;
+    font-weight: 500;
+    color: #030929;
+    margin: 0;
+    line-height: 1.2;
+    font-family: "Circular Std", "CircularStd", sans-serif;
+    letter-spacing: -0.5px;
+  }
 }
 
 .timescale-control {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0;
 
   .timescale-label {
     font-size: 14px;
-    color: var(--text-labels);
+    color: #687196;
     font-weight: 400;
+    white-space: nowrap;
+    padding: 6px 12px;
+    border-radius: 6px 0 0 6px;
+    background-color: #F1F3F8;
+    display: flex;
+    align-items: center;
+    height: 32px;
   }
 
   .zoom-select {
-    width: 120px;
+    width: auto;
+    min-width: 90px;
 
     ::ng-deep {
       .ng-select-container {
-        height: 36px;
-        min-height: 36px;
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
+        height: 32px;
+        min-height: 32px;
+        border: none;
+        border-radius: 0 6px 6px 0;
         font-size: 14px;
         font-family: "Circular Std", "CircularStd", sans-serif;
+        background-color: #FFFFFF !important;
+        padding: 0 12px;
+        box-shadow: none;
+        border: 1px solid #E5E7EB;
+        border-left: none;
 
         .ng-value-container {
-          padding-left: 12px;
+          padding: 0;
+          background-color: transparent;
+          display: flex;
+          align-items: center;
 
           .ng-value {
             font-weight: 500;
-            color: var(--text-primary);
+            color: #5659FF;
+            padding: 0;
           }
+        }
+
+        .ng-placeholder {
+          color: #5659FF;
         }
       }
 
       .ng-arrow-wrapper {
-        padding-right: 8px;
+        padding-right: 0;
+        padding-left: 6px;
+        display: flex;
+        align-items: center;
+        
+        .ng-arrow {
+          border-color: #5659FF transparent transparent;
+          border-style: solid;
+          border-width: 5px 4px 0 4px;
+        }
       }
+
+      &.ng-select-opened {
+        .ng-arrow-wrapper .ng-arrow {
+          border-color: transparent transparent #5659FF;
+          border-width: 0 4px 5px 4px;
+        }
+      }
+
+      // Dropdown panel styles are in global styles.scss since appendTo="body"
+      // The dropdown is rendered outside this component's scope
     }
-  }
-}
-
-.today-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 16px;
-  height: 36px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background-color: var(--bg-white);
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 500;
-  font-family: "Circular Std", "CircularStd", sans-serif;
-  cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background-color: var(--bg-hover);
-    border-color: var(--element-primary-6);
-  }
-
-  &:active {
-    background-color: var(--bg-light);
   }
 }
 
@@ -112,6 +142,7 @@
   flex: 1;
   overflow: hidden;
   position: relative;
+  border: 1px solid #E8EAF0;
 }
 
 /* ===== Work Center Panel (Fixed Left) ===== */
@@ -129,18 +160,17 @@
 .work-center-header {
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  height: var(--header-height);
-  min-height: var(--header-height);
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--bg-light);
+  padding: 0 20px;
+  height: 56px;
+  min-height: 56px;
+  border-bottom: 1px solid #E8EAF0;
 
   span {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-labels);
+    font-size: 11px;
+    font-weight: 600;
+    color: #687196;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
   }
 }
 
@@ -167,7 +197,8 @@
   overflow: hidden;
   flex-shrink: 0;
   border-bottom: 1px solid var(--border-color);
-  background-color: var(--bg-light);
+  position: relative;
+  z-index: 3;
 }
 
 .timeline-grid-scroll {
