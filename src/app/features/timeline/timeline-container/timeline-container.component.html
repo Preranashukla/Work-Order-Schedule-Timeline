@@ -36,9 +36,10 @@
       <div class="work-center-header">
         <span>Work Center</span>
       </div>
-      <div class="work-center-rows">
+      <div class="work-center-rows" #workCenterScrollContainer>
         <app-work-center-list
           [workCenters]="workCenterService.workCenters()"
+          [workOrders]="workOrderService.workOrders()"
           [hoveredRowIndex]="hoveredRowIndex()"
           (rowHover)="hoveredRowIndex.set($event)"
           (rowLeave)="hoveredRowIndex.set(-1)"
@@ -54,7 +55,7 @@
           [columns]="timelineService.columns()"
           [columnWidth]="timelineService.columnWidth()"
           [totalWidth]="timelineService.totalWidth()"
-          [todayPosition]="timelineService.getTodayPosition()"
+          [todayPosition]="timelineService.todayPosition()"
         />
       </div>
 
@@ -70,7 +71,7 @@
           [columns]="timelineService.columns()"
           [columnWidth]="timelineService.columnWidth()"
           [totalWidth]="timelineService.totalWidth()"
-          [todayPosition]="timelineService.getTodayPosition()"
+          [todayPosition]="timelineService.todayPosition()"
           [hoveredRowIndex]="hoveredRowIndex()"
           [timelineService]="timelineService"
           (rowHover)="hoveredRowIndex.set($event)"
@@ -85,7 +86,7 @@
 
   <!-- Slide-out Panel (Create/Edit) -->
   @if (panelState().isOpen) {
-    <div class="overlay-backdrop visible" (click)="onPanelClose()"></div>
+    <div class="overlay-backdrop visible" (click)="onPanelClose()" aria-hidden="true"></div>
     <app-work-order-panel
       [mode]="panelState().mode"
       [workCenterId]="panelState().workCenterId"

@@ -16,56 +16,51 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
     <div 
       class="work-order-bar"
       [style.left.px]="leftPosition"
+      [style.width.px]="barWidth"
       [style.backgroundColor]="statusConfig.bgColor"
       [style.borderColor]="statusConfig.color"
       [class.hovered]="isHovered"
       (mouseenter)="isHovered = true"
       (mouseleave)="onMouseLeave()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'Work order: ' + workOrder.data.name + ', Status: ' + workOrder.data.status"
+      (keydown.enter)="onEdit()"
+      (keydown.space)="onEdit()"
     >
       <div class="bar-content">
         <span class="bar-name">{{ workOrder.data.name }}</span>
-        <app-status-badge [status]="workOrder.data.status" />
       </div>
 
-      <!-- Three-dot actions menu -->
-      <button 
-        class="actions-btn"
-        (click)="toggleMenu($event)"
-        [class.visible]="isHovered || menuOpen()"
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="3" r="1.5" [attr.fill]="statusConfig.color"/>
-          <circle cx="8" cy="8" r="1.5" [attr.fill]="statusConfig.color"/>
-          <circle cx="8" cy="13" r="1.5" [attr.fill]="statusConfig.color"/>
-        </svg>
-      </button>
+      <div class="bar-actions">
+        <app-status-badge [status]="workOrder.data.status" [contrast]="true" />
+        
+        <!-- Three-dot actions menu -->
+        <button 
+          class="actions-btn"
+          (click)="toggleMenu($event)"
+          [class.visible]="isHovered || menuOpen()"
+          aria-label="Work order actions"
+          [attr.aria-expanded]="menuOpen()"
+          aria-haspopup="true"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="8" cy="3" r="1.5" [attr.fill]="statusConfig.color"/>
+            <circle cx="8" cy="8" r="1.5" [attr.fill]="statusConfig.color"/>
+            <circle cx="8" cy="13" r="1.5" [attr.fill]="statusConfig.color"/>
+          </svg>
+        </button>
+      </div>
 
       <!-- Dropdown Menu -->
       @if (menuOpen()) {
-        <div class="actions-dropdown" (click)="$event.stopPropagation()">
-          <button class="dropdown-item" (click)="onEdit()">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M10.5 1.75L12.25 3.5L10.5 5.25M1.75 12.25H3.5L10.5 5.25L8.75 3.5L1.75 10.5V12.25Z" stroke="#687196" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Edit
+        <div class="actions-dropdown" (click)="$event.stopPropagation()" role="menu">
+          <button class="dropdown-item" (click)="onEdit()" role="menuitem">
+            <span>Edit</span>
           </button>
-          <button class="dropdown-item delete" (click)="onDelete()">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M1.75 3.5H12.25M5.25 6.125V10.375M8.75 6.125V10.375M2.625 3.5L3.5 11.375C3.5 11.8582 3.89175 12.25 4.375 12.25H9.625C10.1082 12.25 10.5 11.8582 10.5 11.375L11.375 3.5M5.25 3.5V1.75H8.75V3.5" stroke="#E74C3C" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Delete
+          <button class="dropdown-item delete" (click)="onDelete()" role="menuitem">
+           <span>Delete </span>
           </button>
-        </div>
-      }
-
-      <!-- Tooltip on hover (bonus) -->
-      @if (isHovered && !menuOpen()) {
-        <div class="bar-tooltip">
-          <div class="tooltip-name">{{ workOrder.data.name }}</div>
-          <div class="tooltip-dates">{{ workOrder.data.startDate }} → {{ workOrder.data.endDate }}</div>
-          <div class="tooltip-status">
-            <app-status-badge [status]="workOrder.data.status" />
-          </div>
         </div>
       }
     </div>
@@ -73,8 +68,6 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
   styles: [`
     :host {
       position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
       z-index: 3;
 
       &.menu-open {
@@ -84,7 +77,6 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
 
     .work-order-bar {
       position: absolute;
-      width: 381px;
       height: 38px;
       border-radius: 6px;
       border-left: 3px solid;
@@ -93,8 +85,11 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
       justify-content: space-between;
       padding: 0 8px 0 10px;
       cursor: pointer;
-      transition: box-shadow 0.15s ease, transform 0.1s ease;
+      transition: box-shadow 0.15s ease;
       overflow: visible;
+      will-change: box-shadow;
+      backface-visibility: hidden;
+      transform: translateZ(0);
 
       &.hovered {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
@@ -104,10 +99,17 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
     .bar-content {
       display: flex;
       align-items: center;
-      gap: 8px;
       overflow: hidden;
       flex: 1;
       min-width: 0;
+      margin-right: 8px;
+    }
+
+    .bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
     }
 
     .bar-name {
@@ -129,9 +131,13 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
       background: transparent;
       border-radius: 4px;
       cursor: pointer;
-      opacity: 1;
+      opacity: 0;
       transition: opacity 0.15s ease, background-color 0.12s ease;
       flex-shrink: 0;
+
+      &.visible {
+        opacity: 1;
+      }
 
       &:hover {
         background-color: rgba(0, 0, 0, 0.08);
@@ -145,39 +151,45 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
     .actions-dropdown {
       position: absolute;
       top: 100%;
-      right: 4px;
+      left: 339px;
       margin-top: 4px;
-      background: #FFFFFF;
-      border: 1px solid #E8EAF0;
-      border-radius: 8px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-      z-index: 1000;
-      min-width: 120px;
+      width: 200px;
+      height: 80px;
+      background-color: rgba(255, 255, 255, 1);
+      border-radius: 5px;
+      box-shadow: 0 0 0 1px rgba(104, 113, 150, 0.1),
+                  0 2.5px 3px -1.5px rgba(200, 207, 233, 1),
+                  0 4.5px 5px -1px rgba(216, 220, 235, 1);
+      z-index: 9999;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .dropdown-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      width: 100%;
+      width: 150px;
       padding: 8px 12px;
       border: none;
       background: transparent;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 400;
       color: var(--text-primary, #030929);
       cursor: pointer;
       font-family: "Circular Std", "CircularStd", sans-serif;
       transition: background-color 0.12s ease;
+      font-style: book;
 
       &:hover {
         background-color: var(--bg-hover, #F4F5F9);
       }
 
       &.delete {
-        color: #E74C3C;
 
+color: rgba(62, 64, 219, 1);
         &:hover {
           background-color: #FEF2F2;
         }
@@ -226,6 +238,7 @@ export class WorkOrderBarComponent {
   @Input({ required: true }) workOrder!: WorkOrderDocument;
   @Input({ required: true }) leftPosition!: number;
   @Input({ required: true }) barWidth!: number;
+  @Input() zIndex: number = 3;
 
   @Output() editWorkOrder = new EventEmitter<string>();
   @Output() deleteWorkOrder = new EventEmitter<string>();
@@ -236,6 +249,11 @@ export class WorkOrderBarComponent {
   @HostBinding('class.menu-open')
   get isMenuOpen() {
     return this.menuOpen();
+  }
+
+  @HostBinding('style.z-index')
+  get hostZIndex() {
+    return this.menuOpen() ? 100 : this.zIndex;
   }
 
   get statusConfig() {

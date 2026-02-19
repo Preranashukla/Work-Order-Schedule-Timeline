@@ -19,6 +19,7 @@ export interface WorkOrderDocument {
     status: WorkOrderStatus;
     startDate: string;   // ISO format "YYYY-MM-DD"
     endDate: string;     // ISO format "YYYY-MM-DD"
+    dependsOnWorkOrderIds?: string[]; // IDs of work orders this one depends on
   };
 }
 

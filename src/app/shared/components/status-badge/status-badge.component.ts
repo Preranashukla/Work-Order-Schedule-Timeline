@@ -13,8 +13,9 @@ import { WorkOrderStatus, STATUS_CONFIG } from '../../../core/models/work-order.
   template: `
     <span 
       class="status-badge"
-      [style.color]="config.color"
-      [style.backgroundColor]="config.bgColor"
+      [style.color]="textColor"
+      [style.backgroundColor]="backgroundColor"
+      [style.boxShadow]="contrast ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'"
     >
       {{ config.label }}
     </span>
@@ -36,8 +37,33 @@ import { WorkOrderStatus, STATUS_CONFIG } from '../../../core/models/work-order.
 })
 export class StatusBadgeComponent {
   @Input({ required: true }) status!: WorkOrderStatus;
+  @Input() contrast = false;
 
   get config() {
     return STATUS_CONFIG[this.status];
+  }
+
+  get backgroundColor() {
+    if (this.contrast) {
+      switch (this.status) {
+        case 'open': return 'rgba(6, 182, 212, 0.1)';
+        case 'in-progress': return 'rgba(139, 92, 246, 0.1)';
+        case 'complete': return 'rgba(34, 197, 94, 0.1)';
+        case 'blocked': return 'rgba(249, 115, 22, 0.1)';
+      }
+    }
+    return this.config.bgColor;
+  }
+
+  get textColor() {
+    if (this.contrast) {
+      switch (this.status) {
+        case 'open': return '#06B6D4';
+        case 'in-progress': return '#8B5CF6';
+        case 'complete': return '#22C55E';
+        case 'blocked': return '#F97316';
+      }
+    }
+    return this.config.color;
   }
 }

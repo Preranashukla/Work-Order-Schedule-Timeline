@@ -5,7 +5,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 
 import { WorkCenterDocument } from '../../../core/models/work-center.model';
-import { WorkOrderStatus, STATUS_CONFIG } from '../../../core/models/work-order.model';
+import { WorkOrderStatus, STATUS_CONFIG, WorkOrderDocument } from '../../../core/models/work-order.model';
 import { PanelMode } from '../../../core/models/timeline.model';
 import { WorkOrderService } from '../../../core/services/work-order.service';
 
@@ -45,6 +45,9 @@ export class WorkOrderPanelComponent implements OnInit, OnChanges {
   /** Status options for dropdown */
   statusOptions = Object.values(STATUS_CONFIG);
 
+  /** Available work orders for dependency selection */
+  availableDependencies: WorkOrderDocument[] = [];
+
   /** Error message for overlap detection */
   overlapError = signal<string | null>(null);
 
@@ -66,6 +69,11 @@ export class WorkOrderPanelComponent implements OnInit, OnChanges {
    */
   private initForm(): void {
     this.overlapError.set(null);
+    
+    // Get all work orders for dependency selection, excluding current one if editing
+    this.availableDependencies = this.workOrderService.workOrders().filter(wo => 
+      wo.docId !== this.workOrderId
+    );
 
     if (this.mode === 'edit' && this.workOrderId) {
       // Edit mode: populate with existing data

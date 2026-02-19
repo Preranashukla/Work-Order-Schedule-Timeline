@@ -148,7 +148,7 @@
 /* ===== Work Center Panel (Fixed Left) ===== */
 .work-center-panel {
   width: var(--work-center-width);
-  min-width: var(--work-center-width);
+  min-width: 380px;
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -205,6 +205,7 @@
   flex: 1;
   overflow: auto;
   position: relative;
+  background-color: rgba(247, 249, 252, 1);
 }
 
 /* ===== Overlay ===== */
@@ -214,7 +215,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(3, 9, 41, 0.3);
+  background: rgba(247, 249, 252, 0.5);
   z-index: 998;
   animation: fadeIn 0.2s ease;
 }

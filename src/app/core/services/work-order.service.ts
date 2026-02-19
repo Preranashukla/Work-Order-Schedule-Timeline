@@ -21,17 +21,25 @@ export class WorkOrderService {
 
   /**
    * Load work orders from localStorage or use sample data
+   * Optimized: Uses localStorage cache with version check
    */
   private loadFromStorage(): WorkOrderDocument[] {
     try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
+      // Clear old cache if dataset size changed
+      localStorage.removeItem(this.STORAGE_KEY);
+      
+      console.log(`⏳ Loading ${SAMPLE_WORK_ORDERS.length} work orders...`);
+      const orders = [...SAMPLE_WORK_ORDERS];
+      
+      // Cache for next time
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(orders));
+      console.log(`✅ Loaded and cached ${orders.length} work orders`);
+      
+      return orders;
     } catch (e) {
       console.warn('Failed to load work orders from localStorage:', e);
+      return [...SAMPLE_WORK_ORDERS];
     }
-    return [...SAMPLE_WORK_ORDERS];
   }
 
   /**

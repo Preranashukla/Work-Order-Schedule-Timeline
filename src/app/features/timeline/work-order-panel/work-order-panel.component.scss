@@ -98,9 +98,11 @@
   padding: 0 14px;
   border: 1px solid #E8EAF0;
   border-radius: 8px;
-  font-size: 14px;
-  font-family: "Circular Std", "CircularStd", sans-serif;
-  color: #030929;
+  color: rgba(164, 170, 192, 1);
+font-family: CircularStd-Regular;
+font-size: 14px;
+font-weight: 500;
+
   background-color: #FFFFFF;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
@@ -131,26 +133,6 @@
     cursor: pointer;
   }
 
-  .date-btn {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: transparent;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.12s ease;
-
-    &:hover {
-      background-color: #F4F5F9;
-    }
-  }
 }
 
 .error-message {
@@ -394,4 +376,20 @@
       }
     }
   }
+}
+
+/* ===== Datepicker overrides ===== */
+::ng-deep .ngb-dp-header {
+  background-color: #FFFFFF !important;
+}
+
+::ng-deep .ngb-dp-content {
+  background-color: #FFFFFF !important;
+}
+
+::ng-deep ngb-datepicker {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E8EAF0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+  font-family: "Circular Std", "CircularStd", sans-serif !important;
 }

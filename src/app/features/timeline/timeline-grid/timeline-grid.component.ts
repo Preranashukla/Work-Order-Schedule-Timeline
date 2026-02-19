@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter, signal, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, HostListener, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WorkCenterDocument } from '../../../core/models/work-center.model';
 import { WorkOrderDocument } from '../../../core/models/work-order.model';
 import { TimelineColumn } from '../../../core/models/timeline.model';
 import { TimelineService } from '../../../core/services/timeline.service';
 import { WorkOrderBarComponent } from '../work-order-bar/work-order-bar.component';
+import { assignLanesByWorkCenter, WorkOrderWithLane, getLaneCount } from '../../../core/utils/lane-assignment.util';
 
 /**
  * Timeline Grid Component
@@ -24,10 +25,11 @@ import { WorkOrderBarComponent } from '../work-order-bar/work-order-bar.componen
         </div>
       }
 
-      <!-- Grid rows for each work center -->
+      <!-- Grid rows for each work center (dynamic height based on lanes) -->
       <div 
         class="grid-row"
         *ngFor="let wc of workCenters; let i = index; trackBy: trackByWc"
+        [style.height.px]="getRowHeight(wc.docId)"
         [class.hovered]="hoveredRowIndex === i"
         (mouseenter)="rowHover.emit(i)"
         (mouseleave)="rowLeave.emit()"
@@ -42,12 +44,14 @@ import { WorkOrderBarComponent } from '../work-order-bar/work-order-bar.componen
           [class.is-today]="col.isToday"
         ></div>
 
-        <!-- Work order bars for this row -->
+        <!-- Work order bars for this row (positioned in lanes) -->
         <app-work-order-bar
           *ngFor="let wo of getWorkOrdersForCenter(wc.docId); trackBy: trackByWo"
           [workOrder]="wo"
           [leftPosition]="getBarLeft(wo)"
-          [barWidth]="getBarWidth(wo)"
+          [barWidth]="381"
+          [style.top.px]="getBarTop(wo)"
+          [zIndex]="wo.lane + 10"
           (editWorkOrder)="editWorkOrder.emit($event)"
           (deleteWorkOrder)="deleteWorkOrder.emit($event)"
         />
@@ -85,8 +89,7 @@ import { WorkOrderBarComponent } from '../work-order-bar/work-order-bar.componen
     .grid-row {
       display: flex;
       position: relative;
-      height: var(--row-height, 64px);
-      min-height: var(--row-height, 64px);
+      min-height: 64px;
       cursor: pointer;
       transition: background-color 0.12s ease;
 
@@ -176,7 +179,7 @@ import { WorkOrderBarComponent } from '../work-order-bar/work-order-bar.componen
     }
   `]
 })
-export class TimelineGridComponent {
+export class TimelineGridComponent implements OnInit, OnChanges {
   @Input({ required: true }) workCenters!: WorkCenterDocument[];
   @Input({ required: true }) workOrders!: WorkOrderDocument[];
   @Input({ required: true }) columns!: TimelineColumn[];
@@ -197,11 +200,54 @@ export class TimelineGridComponent {
   tooltipX = signal<number>(0);
   tooltipY = signal<number>(0);
 
+  /** Lane assignments by work center */
+  private laneAssignments = new Map<string, WorkOrderWithLane[]>();
+  
+  /** Lane configuration */
+  private readonly LANE_HEIGHT = 44; // Height of each lane
+  private readonly MIN_ROW_HEIGHT = 64; // Minimum row height
+
+  ngOnInit(): void {
+    this.updateLaneAssignments();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['workOrders']) {
+      this.updateLaneAssignments();
+    }
+  }
+
   /**
-   * Get work orders for a specific work center
+   * Update lane assignments for all work centers
    */
-  getWorkOrdersForCenter(workCenterId: string): WorkOrderDocument[] {
-    return this.workOrders.filter(wo => wo.data.workCenterId === workCenterId);
+  private updateLaneAssignments(): void {
+    this.laneAssignments = assignLanesByWorkCenter(this.workOrders);
+  }
+
+  /**
+   * Get work orders with lane assignments for a specific work center
+   */
+  getWorkOrdersForCenter(workCenterId: string): WorkOrderWithLane[] {
+    return this.laneAssignments.get(workCenterId) || [];
+  }
+
+  /**
+   * Get the height for a work center row based on number of lanes needed
+   */
+  getRowHeight(workCenterId: string): number {
+    const orders = this.laneAssignments.get(workCenterId) || [];
+    if (orders.length === 0) return this.MIN_ROW_HEIGHT;
+    
+    const laneCount = getLaneCount(orders);
+    const calculatedHeight = laneCount * this.LANE_HEIGHT + 20; // 20px padding
+    return Math.max(this.MIN_ROW_HEIGHT, calculatedHeight);
+  }
+
+  /**
+   * Get the top position for a work order bar based on its lane
+   */
+  getBarTop(wo: WorkOrderWithLane): number {
+    return wo.lane * this.LANE_HEIGHT + 10; // 10px top padding
   }
 
   /**

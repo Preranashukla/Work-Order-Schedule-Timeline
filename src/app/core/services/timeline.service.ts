@@ -38,6 +38,9 @@ export class TimelineService {
     this.columns().length * this.columnWidth()
   );
 
+  /** Today's position as a computed signal to avoid NG0100 errors */
+  readonly todayPosition = computed(() => this.dateToPosition(new Date()));
+
   /**
    * Calculate initial date range centered on today
    */
@@ -53,6 +56,15 @@ export class TimelineService {
     
     const end = new Date(today);
     end.setDate(end.getDate() + halfBuffer);
+    
+    console.log('📅 Timeline Range:', {
+      zoom,
+      today: today.toISOString().split('T')[0],
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0],
+      bufferDays,
+      halfBuffer
+    });
     
     return { start, end };
   }
@@ -255,18 +267,11 @@ export class TimelineService {
   }
 
   /**
-   * Get the position of today's indicator line
-   */
-  getTodayPosition(): number {
-    return this.dateToPosition(new Date());
-  }
-
-  /**
    * Scroll to center on today's date
    * @returns The scroll position to center on today
    */
   getScrollPositionForToday(containerWidth: number): number {
-    const todayPos = this.getTodayPosition();
+    const todayPos = this.todayPosition();
     return Math.max(0, todayPos - containerWidth / 2);
   }
 
@@ -287,5 +292,13 @@ export class TimelineService {
    */
   formatDateForInput(date: Date): string {
     return date.toISOString().split('T')[0];
+  }
+
+  /**
+   * Get the current visible date range
+   * Used for viewport filtering to improve performance with large datasets
+   */
+  getVisibleDateRange(): DateRange | null {
+    return this._dateRange();
   }
 }

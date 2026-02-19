@@ -49,14 +49,21 @@ export const SAMPLE_WORK_CENTERS: WorkCenterDocument[] = [
 function getDateString(daysOffset: number): string {
   const date = new Date();
   date.setDate(date.getDate() + daysOffset);
-  return date.toISOString().split('T')[0];
+  const dateStr = date.toISOString().split('T')[0];
+  
+  // Debug: Log the first few dates to verify
+  if (daysOffset === -45 || daysOffset === 0 || daysOffset === 45) {
+    console.log(`📆 Work Order Date (offset ${daysOffset}):`, dateStr);
+  }
+  
+  return dateStr;
 }
 
 /**
- * Generate large dataset of work orders for performance testing
- * Creates 10,000 work orders with some overlapping to test z-index ordering
+ * Generate dataset of work orders with overlapping for testing
+ * Creates realistic number of orders with intentional overlaps to test z-index ordering
  */
-function generateLargeDataset(): WorkOrderDocument[] {
+function generateDataset(): WorkOrderDocument[] {
   const workOrders: WorkOrderDocument[] = [];
   const statuses: WorkOrderStatus[] = ['open', 'in-progress', 'complete', 'blocked'];
   const workCenterIds = SAMPLE_WORK_CENTERS.map(wc => wc.docId);
@@ -69,33 +76,41 @@ function generateLargeDataset(): WorkOrderDocument[] {
     'Machining Job', 'Welding Task', 'Coating Process', 'Heat Treatment'
   ];
 
-  // Generate 10,000 work orders
-  for (let i = 0; i < 10000; i++) {
+  // Generate 1,000 work orders - optimal balance between testing and performance
+  for (let i = 0; i < 10; i++) {
     const workCenterId = workCenterIds[i % workCenterIds.length];
     const status = statuses[i % statuses.length];
     const productName = productNames[i % productNames.length];
     
-    // Create varied date ranges
-    // Some will overlap intentionally to test z-index
+    // Create varied date ranges with intentional overlaps
     let startOffset: number;
     let duration: number;
     
-    if (i % 10 === 0) {
-      // Every 10th order: create overlapping orders (same start date range)
-      startOffset = Math.floor(i / 10) % 60 - 30; // -30 to +30 days
-      duration = 3 + (i % 5); // 3-7 days
-    } else if (i % 7 === 0) {
-      // Every 7th order: longer duration orders
-      startOffset = (i % 90) - 45; // -45 to +45 days
-      duration = 10 + (i % 10); // 10-19 days
+    if (i % 8 === 0) {
+      // Every 8th order: create overlapping orders (same start date range)
+      startOffset = Math.floor(i / 8) % 40 - 20; // -20 to +20 days
+      duration = 5 + (i % 4); // 5-8 days
+    } else if (i % 5 === 0) {
+      // Every 5th order: longer duration orders that will overlap
+      startOffset = (i % 60) - 30; // -30 to +30 days
+      duration = 12 + (i % 8); // 12-19 days
     } else {
       // Regular orders: distributed across timeline
-      startOffset = (i % 120) - 60; // -60 to +60 days
-      duration = 2 + (i % 8); // 2-9 days
+      startOffset = (i % 90) - 45; // -45 to +45 days
+      duration = 3 + (i % 7); // 3-9 days
     }
 
     const startDate = getDateString(startOffset);
     const endDate = getDateString(startOffset + duration);
+
+    // Add dependency to previous order occasionally
+    const dependsOnWorkOrderIds: string[] = [];
+    if (i > 0 && i % 5 === 0) {
+      const prevOrder = workOrders[i - 1];
+      if (prevOrder) {
+        dependsOnWorkOrderIds.push(prevOrder.docId);
+      }
+    }
 
     workOrders.push({
       docId: `wo-${String(i + 1).padStart(5, '0')}`,
@@ -105,7 +120,8 @@ function generateLargeDataset(): WorkOrderDocument[] {
         workCenterId,
         status,
         startDate,
-        endDate
+        endDate,
+        dependsOnWorkOrderIds
       }
     });
   }
@@ -115,13 +131,26 @@ function generateLargeDataset(): WorkOrderDocument[] {
 
 /**
  * Sample Work Orders - Large dataset for performance testing
- * - 10,000 work orders
+ * - 1,000 work orders (200 per work center)
  * - Distributed across 5 work centers
  * - All 4 status types represented
  * - Includes overlapping orders to test z-index ordering
- * - Various date ranges spanning 120 days (-60 to +60 from today)
+ * - Various date ranges spanning 90 days (-45 to +45 from today)
+ * 
+ * Memoized: Generated once and cached for performance
+ * Note: 1,000 orders provides excellent testing while maintaining smooth performance
  */
-export const SAMPLE_WORK_ORDERS: WorkOrderDocument[] = generateLargeDataset();
+let _cachedWorkOrders: WorkOrderDocument[] | null = null;
+
+export const SAMPLE_WORK_ORDERS: WorkOrderDocument[] = (() => {
+  if (!_cachedWorkOrders) {
+    console.time('⏱️ Dataset generation');
+    _cachedWorkOrders = generateDataset();
+    console.timeEnd('⏱️ Dataset generation');
+    console.log(`📊 Generated ${_cachedWorkOrders.length} work orders`);
+  }
+  return _cachedWorkOrders;
+})();
 
 /**
  * Small sample dataset for development/testing

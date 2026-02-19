@@ -56,5 +56,5 @@ export const BUFFER_DAYS: Record<ZoomLevel, number> = {
   hour: 3,     // ±36 hours visible = 3 days total
   day: 30,     // ±2 weeks visible = ~30 days total
   week: 90,    // ±2 months visible
-  month: 365   // ±6 months visible
+  month: 180   // ±3 months visible (reduced to match work order data range)
 };

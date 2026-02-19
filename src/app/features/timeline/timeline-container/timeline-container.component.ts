@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, computed, signal, effect } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, computed, signal, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -32,6 +32,7 @@ import { WorkOrderPanelComponent } from '../work-order-panel/work-order-panel.co
 export class TimelineContainerComponent implements OnInit, AfterViewInit {
   @ViewChild('timelineScrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('headerScrollContainer') headerScrollContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('workCenterScrollContainer') workCenterScrollContainer!: ElementRef<HTMLDivElement>;
 
   /** Zoom level options for the dropdown */
   zoomOptions = [
@@ -59,7 +60,8 @@ export class TimelineContainerComponent implements OnInit, AfterViewInit {
   constructor(
     public workCenterService: WorkCenterService,
     public workOrderService: WorkOrderService,
-    public timelineService: TimelineService
+    public timelineService: TimelineService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -68,7 +70,11 @@ export class TimelineContainerComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     // Center on today after view initializes
-    setTimeout(() => this.scrollToToday(), 100);
+    // Use setTimeout to ensure DOM is fully rendered
+    setTimeout(() => {
+      this.scrollToToday();
+      console.log('📍 Scrolled to today');
+    }, 100);
   }
 
   /**
@@ -83,11 +89,19 @@ export class TimelineContainerComponent implements OnInit, AfterViewInit {
 
   /**
    * Synchronize horizontal scroll between header and grid
+   * Synchronize vertical scroll between grid and work center list
    */
   onTimelineScroll(event: Event): void {
     const target = event.target as HTMLDivElement;
+    
+    // Sync horizontal scroll with header
     if (this.headerScrollContainer) {
       this.headerScrollContainer.nativeElement.scrollLeft = target.scrollLeft;
+    }
+
+    // Sync vertical scroll with work center list
+    if (this.workCenterScrollContainer) {
+      this.workCenterScrollContainer.nativeElement.scrollTop = target.scrollTop;
     }
   }
 
@@ -154,6 +168,9 @@ export class TimelineContainerComponent implements OnInit, AfterViewInit {
       workOrderId: null,
       prefilledStartDate: null
     });
+    
+    // Return focus to the grid or last active element if possible
+    // In a real app, we would track the last focused element
   }
 
   /**
