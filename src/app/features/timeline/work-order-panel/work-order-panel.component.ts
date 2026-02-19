@@ -223,7 +223,7 @@ export class WorkOrderPanelComponent implements OnInit, OnChanges {
    * Get the submit button text based on mode
    */
   get submitButtonText(): string {
-    return this.mode === 'edit' ? 'Save' : 'Create';
+    return this.mode === 'edit' ? 'Save' : 'Save';
   }
 
   /**

@@ -76,7 +76,7 @@ function generateDataset(): WorkOrderDocument[] {
     'Machining Job', 'Welding Task', 'Coating Process', 'Heat Treatment'
   ];
 
-  // Generate 1,000 work orders - optimal balance between testing and performance
+  // Generate 10 work orders across 5 work centers (2 per center)
   for (let i = 0; i < 10; i++) {
     const workCenterId = workCenterIds[i % workCenterIds.length];
     const status = statuses[i % statuses.length];
@@ -130,15 +130,14 @@ function generateDataset(): WorkOrderDocument[] {
 }
 
 /**
- * Sample Work Orders - Large dataset for performance testing
- * - 1,000 work orders (200 per work center)
+ * Sample Work Orders
+ * - 10 work orders (2 per work center)
  * - Distributed across 5 work centers
  * - All 4 status types represented
- * - Includes overlapping orders to test z-index ordering
- * - Various date ranges spanning 90 days (-45 to +45 from today)
- * 
- * Memoized: Generated once and cached for performance
- * Note: 1,000 orders provides excellent testing while maintaining smooth performance
+ * - Includes intentional overlaps to test lane assignment
+ * - Date ranges span ~90 days centred on today
+ *
+ * Memoized so the generator only runs once per session.
  */
 let _cachedWorkOrders: WorkOrderDocument[] | null = null;
 

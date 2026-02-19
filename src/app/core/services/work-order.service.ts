@@ -20,26 +20,30 @@ export class WorkOrderService {
   readonly workOrders = computed(() => this._workOrders());
 
   /**
-   * Load work orders from localStorage or use sample data
-   * Optimized: Uses localStorage cache with version check
+   * Load work orders from localStorage, falling back to sample data on first run.
+   * Any user changes (create/edit/delete) are persisted across page refreshes.
    */
   private loadFromStorage(): WorkOrderDocument[] {
     try {
-      // Clear old cache if dataset size changed
-      localStorage.removeItem(this.STORAGE_KEY);
-      
-      console.log(`⏳ Loading ${SAMPLE_WORK_ORDERS.length} work orders...`);
-      const orders = [...SAMPLE_WORK_ORDERS];
-      
-      // Cache for next time
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(orders));
-      console.log(`✅ Loaded and cached ${orders.length} work orders`);
-      
-      return orders;
+      const stored = localStorage.getItem(this.STORAGE_KEY);
+      if (stored) {
+        const orders: WorkOrderDocument[] = JSON.parse(stored);
+        console.log(`✅ Restored ${orders.length} work orders from localStorage`);
+        return orders;
+      }
     } catch (e) {
-      console.warn('Failed to load work orders from localStorage:', e);
-      return [...SAMPLE_WORK_ORDERS];
+      console.warn('Failed to parse localStorage, falling back to sample data:', e);
     }
+
+    // First run — seed from sample data and persist
+    const orders = [...SAMPLE_WORK_ORDERS];
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(orders));
+    } catch (e) {
+      console.warn('Could not write to localStorage:', e);
+    }
+    console.log(`📦 Seeded ${orders.length} sample work orders`);
+    return orders;
   }
 
   /**
